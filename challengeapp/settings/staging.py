@@ -1,15 +1,15 @@
 from .base import *
 
-ALLOWED_HOSTS = ['account.brainred.com','209.97.136.148','127.0.0.1','localhost']
-DEBUG = True
+ALLOWED_HOSTS = ['178.128.9.218']
+DEBUG = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'abbottdb',
+        'NAME': 'challengedb',
         'USER': 'postgres',
         'PASSWORD': '992424558',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '',
     }
 }
 

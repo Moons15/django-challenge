@@ -2,21 +2,49 @@ from rest_framework import generics, status, filters, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from apps.product.api.serializers import ProductSerializer, \
-    ProductDetailSerializer, CreateProductSerializer, CRUDProductSerializer
+    CreateProductSerializer, CRUDProductSerializer
+from rest_framework.generics import get_object_or_404
 from apps.product.models import Product, ProductDetail
-from apps.product.paginations import TenPagination
 
 
 class ListProductAPIView(generics.ListAPIView):
+    """List of products with his details"""
     serializer_class = ProductSerializer
-    pagination_class = TenPagination
     permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Product.objects.filter(is_active=True)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True,
+                                             context={
+                                                 'request': request})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True,
+                                         context={
+                                             'request': request})
+        return Response(serializer.data)
+
+
+class ListProductSearchAPIView(generics.ListAPIView):
+    """List of products wuth query params : fields ' ?name= ' """
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        name = self.request.query_params.get('name', None)
+        if name:
+            return Product.objects.filter(name__contains=name)
+        else:
+            return Product.objects.none()
+
 
 class CreateProductAPIView(generics.CreateAPIView):
+    """Create a product"""
     serializer_class = CreateProductSerializer
     permission_classes = [AllowAny]
 
@@ -32,6 +60,7 @@ class CreateProductAPIView(generics.CreateAPIView):
 
 
 class GetUpdateDeleteProductAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """Get, Update, Delete a product with 'id' """
     serializer_class = CRUDProductSerializer
     permission_classes = [AllowAny]
 
@@ -78,10 +107,10 @@ class GetUpdateDeleteProductAPIView(generics.RetrieveUpdateDestroyAPIView):
             if product:
                 product.delete()
                 return Response({'details': ['Product deleted!']},
-                        status=status.HTTP_200_OK)
+                                status=status.HTTP_200_OK)
         except:
             return Response({'details': ['Product not found!']},
-                        status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class PutProductAPIView(viewsets.ModelViewSet):
@@ -92,10 +121,15 @@ class PutProductAPIView(viewsets.ModelViewSet):
 
     def get_object(self):
         if self.request.method == 'PUT':
-            product = Product.objects.filter(id=self.kwargs.get('pk')).first()
-            if product:
-                return product
+            resource = Product.objects.filter(
+                id=self.kwargs.get('pk')).first()
+            if resource:
+                return resource
             else:
                 return Product(id=self.kwargs.get('pk'))
         else:
             return super(PutProductAPIView, self).get_object()
+
+    def put(self):
+        # TODO: Only for DRF Docs
+        pass

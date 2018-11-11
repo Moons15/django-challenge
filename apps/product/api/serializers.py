@@ -2,7 +2,15 @@ from apps.product.models import Product, ProductDetail
 from rest_framework import serializers
 
 
+class ProductDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductDetail
+        fields = '__all__'
+
+
 class ProductSerializer(serializers.ModelSerializer):
+    product_details = ProductDetailSerializer(read_only=True, many=True)
+
     class Meta:
         model = Product
         fields = '__all__'
@@ -35,12 +43,7 @@ class CRUDProductSerializer(serializers.ModelSerializer):
     brand_id = serializers.IntegerField(required=False)
     code = serializers.IntegerField(required=False)
     family = serializers.IntegerField(required=False)
+
     class Meta:
         model = Product
-        exclude = ('created', 'modified')
-
-
-class ProductDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductDetail
-        fields = '__all__'
+        exclude = ('id', 'created', 'modified')

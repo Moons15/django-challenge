@@ -1,8 +1,16 @@
 from django.db.models import *
 from django.db import models
-from django.contrib.auth.models import PermissionsMixin, BaseUserManager, \
-    AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin, AbstractBaseUser
 from enum import Enum
+
+
+class ProductQuerySet(models.QuerySet):
+    pass
+
+
+class ProductManager(models.Manager):
+    def get_queryset(self):
+        return ProductQuerySet(self.model, using=self._db)
 
 
 class Product(models.Model):
@@ -33,7 +41,16 @@ class Product(models.Model):
         ordering = ('created',)
 
     def __str__(self):
-        return '{} - code: {}'.format(self.name, self.code)
+        return '{} - code: {} -id:{}'.format(self.name, self.code, self.id)
+
+
+class ProductDetailQuerySet(models.QuerySet):
+    pass
+
+
+class ProductDetailManager(models.Manager):
+    def get_queryset(self):
+        return ProductDetailQuerySet(self.model, using=self._db)
 
 
 class ProductDetail(models.Model):
